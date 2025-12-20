@@ -18,17 +18,18 @@ Go to https://github.com/new and create your my-personal-digest repository, and 
 Go to the my-personal-digest repository Settings -> Pages -> Branch: main -> /docs 
 
 Go to the my-personal-digest repository Settings -> Secrets and Variables -> Actions
-	- Mandatory: New Repository secret called MATCHA_DB_KEY which is used to encrypt the matcha database
-	- Mandatory: Click Variables -> New Repository Variable -> MATCHA_CONFIG_YAML with value of a basic matcha configuration
+1. Mandatory: New Repository secret called **MATCHA_DB_KEY** which is used to encrypt the matcha database
+2. Mandatory: Click Variables -> New Repository Variable -> **MATCHA_CONFIG_YAML** with value of a basic matcha configuration
 
-	```
-	markdown_dir_path: pre-docs
-	markdown_db_path: matcha.db
-	feeds:
-	  - http://hnrss.org/best
-	  - https://feeds.bbci.co.uk/news/rss.xml
-	```
+Basic configuration, see [Matcha's repository](https://github.com/piqoni/matcha) for more options (like google_news_keywords etc)
+```
+markdown_dir_path: pre-docs
+markdown_db_path: matcha.db
+feeds:
+  - http://hnrss.org/best
+  - https://feeds.bbci.co.uk/news/rss.xml
+```
 
-	- Optional if you want page to be password protected: Create a new Repository Secret called STATICRYPT_PASSWORD which will be the password that you will use to access your feed. 
+3. Optional: if you want page to be **password protected**: Create a new Repository Secret called STATICRYPT_PASSWORD which will be the password that you will use to access your feed. 
 
 
