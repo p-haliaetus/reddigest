@@ -21,7 +21,6 @@ func main() {
 }
 
 func run() error {
-	// Load markdown files
 	files, err := filepath.Glob("pre-docs/*.md")
 	if err != nil {
 		return err
@@ -43,13 +42,11 @@ func run() error {
 		digests[date] = string(html)
 	}
 
-	// JSON encode digests
 	data, err := json.MarshalIndent(digests, "    ", "  ")
 	if err != nil {
 		return err
 	}
 
-	// Parse and execute template
 	tmpl, err := template.ParseFiles("template/index.html")
 	if err != nil {
 		return err
