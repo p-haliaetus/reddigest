@@ -34,6 +34,27 @@ feeds:
   - https://feeds.bbci.co.uk/news/rss.xml
 ```
 
-3. Optional: if you want page to be **password protected**: Create a new Repository Secret called STATICRYPT_PASSWORD which will be the password that you will use to access your feed. 
+3. Optional: if you want page to be **password protected**: Create a new Repository Secret called STATICRYPT_PASSWORD which will be the password that you will use to access your feed.
 
+# Go Digest
+Current Go Digest configuration/feeds subscriptions:
+```yml
+database_file_path: matcha.db
+feeds:
+  - https://www.alexedwards.net/static/feed.rss
+  - https://www.reddit.com/r/golang/.rss
+  - https://golangweekly.com/rss
+  - https://blog.jetbrains.com/go/feed/
+  - https://go.dev/blog/feed.atom
+  - https://lobste.rs/t/go.rss
+  - https://threedots.tech/index.xml
+  - https://www.ardanlabs.com/index.xml
+  - https://pliutau.com/index.xml
+  - https://www.youtube.com/feeds/videos.xml?channel_id=UCO3LEtymiLrgvpb59cNsb8A
+  - https://bitfieldconsulting.com/posts?format=rss
+  - https://blog.boot.dev/golang/index.xml
+  - https://antonz.org/tags/thank-go/index.xml
+google_news_keywords: golang
+markdown_dir_path: pre-docs
+```
 
