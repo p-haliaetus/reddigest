@@ -28,7 +28,7 @@ Go to the my-personal-digest repository Settings -> Secrets and Variables -> Act
 Basic configuration, see [Matcha's repository](https://github.com/piqoni/matcha) for more options (like google_news_keywords etc)
 ```
 markdown_dir_path: pre-docs
-markdown_db_path: matcha.db
+database_file_path: matcha.db
 feeds:
   - http://hnrss.org/best
   - https://feeds.bbci.co.uk/news/rss.xml
