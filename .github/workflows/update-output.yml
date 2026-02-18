@@ -40,11 +40,15 @@ jobs:
 
       - name: Decrypt database
         run: |
+          set -euo pipefail
+      
           if [ -f matcha.db.enc ]; then
-            openssl enc -aes-256-cbc -pbkdf2 \
-              -d -in matcha.db.enc \
+            openssl enc -aes-256-cbc -d -pbkdf2 -md sha256 \
+              -in matcha.db.enc \
               -out matcha.db \
-              -pass pass:"${{ secrets.MATCHA_DB_KEY }}" || exit 1
+              -pass env:MATCHA_DB_KEY
+          else
+            echo "matcha.db.enc not found; skipping decrypt"
           fi
 
       - name: Run Matcha with Custom Config
