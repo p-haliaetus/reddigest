@@ -15,11 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create config.yaml from secret
+      - name: Create config.yaml
+        shell: bash
         run: |
-          cat << 'EOF' > config.yaml
+          cat > config.yaml <<'EOF'
           ${{ vars.MATCHA_CONFIG_YAML }}
           EOF
+
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -31,14 +33,22 @@ jobs:
         run: go install github.com/piqoni/matcha@latest
 
       - name: Validate MATCHA_DB_KEY
+        shell: bash
+        env:
+          MATCHA_DB_KEY: ${{ secrets.MATCHA_DB_KEY }}
         run: |
-          if [ -z "${{ secrets.MATCHA_DB_KEY }}" ]; then
+          set -euo pipefail
+          if [ -z "${MATCHA_DB_KEY:-}" ]; then
             echo "ERROR: MATCHA_DB_KEY secret is not set!"
-            echo "Please add MATCHA_DB_KEY to your repository secrets because database will always be encrypted, regardless ."
+            echo "Please add MATCHA_DB_KEY to your repository secrets; DB encryption is mandatory."
             exit 1
           fi
 
+
       - name: Decrypt database
+        shell: bash
+        env:
+          MATCHA_DB_KEY: ${{ secrets.MATCHA_DB_KEY }}
         run: |
           set -euo pipefail
       
@@ -64,13 +74,21 @@ jobs:
         run: rm -f pre-docs/*.md
 
       - name: Encrypt database
+        shell: bash
+        env:
+          MATCHA_DB_KEY: ${{ secrets.MATCHA_DB_KEY }}
         run: |
-          openssl enc -aes-256-cbc -pbkdf2 \
-            -salt \
+          set -euo pipefail
+
+          test -f matcha.db || { echo "matcha.db missing; nothing to encrypt" >&2; exit 1; }
+
+          openssl enc -aes-256-cbc -salt -pbkdf2 -md sha256 \
             -in matcha.db \
             -out matcha.db.enc \
-            -pass pass:"${{ secrets.MATCHA_DB_KEY }}" || exit 1
+            -pass env:MATCHA_DB_KEY
+
           rm -f matcha.db
+
 
       - name: Process Site (Encrypt or Copy)
         shell: bash
