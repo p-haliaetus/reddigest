@@ -80,7 +80,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          test -f matcha.db || { echo "matcha.db missing; nothing to encrypt" >&2; exit 1; }
+          if [ ! -f matcha.db ]; then
+            echo "matcha.db not found; nothing to encrypt (first run or Matcha didn't create DB)."
+            exit 0
+          fi
 
           openssl enc -aes-256-cbc -salt -pbkdf2 -md sha256 \
             -in matcha.db \
