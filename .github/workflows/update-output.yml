@@ -63,7 +63,33 @@ jobs:
 
       - name: Run Matcha with Custom Config
         run: |
-          matcha -c config.yaml
+          set -euo pipefail
+          pip install --quiet pyyaml
+
+          # Reddit 429s every request after the first when matcha fires all
+          # feeds back-to-back, so fetch feeds one at a time with a delay.
+          python3 <<'PYEOF'
+          import subprocess
+          import time
+
+          import yaml
+
+          with open("config.yaml") as f:
+              cfg = yaml.safe_load(f)
+
+          feeds = cfg.get("feeds", [])
+          base_cfg = {k: v for k, v in cfg.items() if k != "feeds"}
+
+          for i, feed in enumerate(feeds):
+              print(f"Fetching feed {i + 1}/{len(feeds)}: {feed}", flush=True)
+              with open("feed-config.yaml", "w") as f:
+                  yaml.safe_dump({**base_cfg, "feeds": [feed]}, f)
+              subprocess.run(["matcha", "-c", "feed-config.yaml"], check=False)
+              if i < len(feeds) - 1:
+                  time.sleep(5)
+          PYEOF
+
+          rm -f feed-config.yaml
           matcha -c config.yaml --generate-all
 
       - name: Build HTML content
