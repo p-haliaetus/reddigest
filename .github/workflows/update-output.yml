@@ -66,8 +66,10 @@ jobs:
           set -euo pipefail
           pip install --quiet pyyaml
 
-          # Reddit 429s every request after the first when matcha fires all
-          # feeds back-to-back, so fetch feeds one at a time with a delay.
+          # Reddit throttles this endpoint to roughly one request per ~45-50s
+          # per runner IP (observed: request 1 and request 9 succeeded, 47s
+          # apart, with everything in between 429ing) so a short delay isn't
+          # enough - space reddit.com requests out to match, with a retry.
           python3 <<'PYEOF'
           import subprocess
           import time
@@ -80,13 +82,35 @@ jobs:
           feeds = cfg.get("feeds", [])
           base_cfg = {k: v for k, v in cfg.items() if k != "feeds"}
 
-          for i, feed in enumerate(feeds):
-              print(f"Fetching feed {i + 1}/{len(feeds)}: {feed}", flush=True)
+          REDDIT_DELAY = 50
+          DEFAULT_DELAY = 1
+          RETRY_WAIT = 60
+          MAX_RETRIES = 1
+
+          def fetch(feed):
               with open("feed-config.yaml", "w") as f:
                   yaml.safe_dump({**base_cfg, "feeds": [feed]}, f)
-              subprocess.run(["matcha", "-c", "feed-config.yaml"], check=False)
+              result = subprocess.run(
+                  ["matcha", "-c", "feed-config.yaml"],
+                  capture_output=True, text=True,
+              )
+              print(result.stdout + result.stderr, end="", flush=True)
+              return "429" in result.stderr
+
+          for i, feed in enumerate(feeds):
+              print(f"Fetching feed {i + 1}/{len(feeds)}: {feed}", flush=True)
+              rate_limited = fetch(feed)
+
+              retries = 0
+              while rate_limited and retries < MAX_RETRIES:
+                  retries += 1
+                  print(f"  rate-limited, waiting {RETRY_WAIT}s before retry {retries}/{MAX_RETRIES}", flush=True)
+                  time.sleep(RETRY_WAIT)
+                  rate_limited = fetch(feed)
+
               if i < len(feeds) - 1:
-                  time.sleep(5)
+                  delay = REDDIT_DELAY if "reddit.com" in feed else DEFAULT_DELAY
+                  time.sleep(delay)
           PYEOF
 
           rm -f feed-config.yaml
